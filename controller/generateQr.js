@@ -1,7 +1,7 @@
 const QRCode = require('qrcode');
+const Attendance = require('../models/studentAttendance'); // Attendance model
 const { createCanvas, loadImage } = require('canvas');
 const Student = require('../models/student'); // Adjust path to your Student model
-const Attendance = require('../models/studentAttendance'); // Attendance model
 
 
 // Route to generate and download QR code
