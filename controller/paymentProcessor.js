@@ -1,6 +1,6 @@
-const Groups = require('../models/groups'); // Path to your Groups model
 const mongoose = require('mongoose');
 const Student = require('../models/student'); // Path to your Student model
+const Groups = require('../models/groups'); // Path to your Groups model
 
 // Schema to track monthly payment clicks
 const PaymentClickSchema = new mongoose.Schema({
