@@ -1,6 +1,7 @@
 const PayStudentStory = require('../models/payStudentStory');
 const Student = require('../models/student');
 const Balans = require('../models/balans');
+const moment = require('moment');
 
 const createPayment = async (req, res) => {
     try {
@@ -92,7 +93,102 @@ const deletePayment = async (req, res) => {
     }
 };
 
+
+// Generate mock data function
+// Set moment locale to Russian for month names
+moment.locale('ru');
+
+// Russian month names mapping (optional, since moment already handles this)
+const russianMonths = {
+    'январь': 'Январь',
+    'февраль': 'Февраль',
+    'март': 'Март',
+    'апрель': 'Апрель',
+    'май': 'Май',
+    'июнь': 'Июнь',
+    'июль': 'Июль',
+    'август': 'Август',
+    'сентябрь': 'Сентябрь',
+    'октябрь': 'Октябрь',
+    'ноябрь': 'Ноябрь',
+    'декабрь': 'Декабрь',
+};
+
+// Function to fetch and format data from MongoDB
+const fetchChartData = async () => {
+    const currentMonth = moment().format('MMMM'); // e.g., "май"
+    const capitalizedMonth = russianMonths[currentMonth.toLowerCase()] || currentMonth;
+    const daysInMonth = moment().daysInMonth();
+    const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    // Initialize arrays for income and expenses
+    const income = new Array(daysInMonth).fill(0);
+    const expenses = new Array(daysInMonth).fill(0);
+
+    // Query PayStudentStory for the current month's data
+    const startOfMonth = moment().startOf('month').toDate();
+    const endOfMonth = moment().endOf('month').toDate();
+
+    try {
+        const records = await PayStudentStory.find({
+            studentFeesDate: {
+                $gte: startOfMonth,
+                $lte: endOfMonth,
+            },
+        }).lean();
+
+        // Aggregate income and expenses by day
+        records.forEach((record) => {
+            // Validate studentId (optional, if you suspect invalid data)
+            if (record.studentId && !mongoose.Types.ObjectId.isValid(record.studentId)) {
+                console.warn(`Invalid studentId found: ${record.studentId}`);
+                return; // Skip invalid records
+            }
+
+            const day = moment(record.studentFeesDate).date(); // Get day of the month (1–31)
+            const amount = record.studentFees || 0;
+
+            if (record.state === true) {
+                income[day - 1] += amount; // Add to income
+            } else {
+                expenses[day - 1] += amount; // Add to expenses
+            }
+        });
+
+        return {
+            labels,
+            income,
+            expenses,
+            month: capitalizedMonth,
+        };
+    } catch (error) {
+        console.error('Error querying PayStudentStory:', error);
+        throw error; // Let the route handler handle the error
+    }
+};
+
+// Express route handler
+const getGenerateMockData = async (req, res) => {
+
+    try {
+        const chartData = await fetchChartData();
+        res.status(200).json({
+            success: true,
+            data: chartData,
+            message: 'Chart data fetched successfully',
+        });
+    } catch (error) {
+        console.error('Error fetching chart data:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch chart data',
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
+    getGenerateMockData,
     createPayment,
     getPayments,
     getPaymentById,

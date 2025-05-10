@@ -24,14 +24,49 @@ exports.getTeacherById = async (req, res) => {
 
 // Ustoz yaratish
 exports.createTeacher = async (req, res) => {
-    const teacher = new Teacher(req.body);
     try {
-        const newTeacher = await teacher.save();
-        res.status(201).json(newTeacher);
+        const { teachersId, username } = req.body;
+
+        // Bir vaqtning o'zida ID va username bor-yo‘qligini tekshirish
+        const [existingId, existingUsername] = await Promise.all([
+            Teacher.findOne({ teachersId }),
+            Teacher.findOne({ username }),
+        ]);
+
+        if (existingId) {
+            return res.status(400).json({ message: 'Ushbu ID raqam bilan ustoz allaqachon mavjud.' });
+        }
+
+        if (existingUsername) {
+            return res.status(400).json({ message: 'Ushbu login (username) bilan ustoz allaqachon mavjud.' });
+        }
+
+        const newTeacher = await Teacher.create(req.body);
+
+        return res.status(201).json({
+            message: 'O‘qituvchi muvaffaqiyatli ro‘yxatdan o‘tdi',
+            teacher: newTeacher
+        });
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        console.error('Xatolik:', err);
+
+        // Validation xatoliklari
+        if (err.name === 'ValidationError') {
+            const errors = Object.values(err.errors).map(e => e.message);
+            return res.status(400).json({ message: `Ma'lumotlar noto‘g‘ri: ${errors.join(', ')}` });
+        }
+
+        // MongoDB unikal constraint xatoliklari
+        if (err.code === 11000) {
+            const field = Object.keys(err.keyPattern)[0];
+            return res.status(400).json({ message: `Ushbu ${field} allaqachon mavjud.` });
+        }
+
+        // Boshqa noma’lum xatoliklar
+        return res.status(500).json({ message: 'Ichki server xatoligi yuz berdi.' });
     }
 };
+
 
 // Ustozni yangilash
 exports.updateTeacher = async (req, res) => {

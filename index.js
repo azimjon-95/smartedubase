@@ -42,7 +42,7 @@ app.use("/api", groups);
 app.use("/api", teacher);
 app.use("/balans", balansRoutes);
 app.use("/api", attendanceRoutes);
-app.use("/api/payments", payStudentStoryRoutes);
+app.use("/api", payStudentStoryRoutes);
 app.use("/api", qrRoutes);
 
 
