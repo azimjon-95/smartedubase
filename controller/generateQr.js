@@ -1,61 +1,5 @@
-const QRCode = require('qrcode');
 const Attendance = require('../models/studentAttendance'); // Attendance model
-const { createCanvas, loadImage } = require('canvas');
 const Student = require('../models/student'); // Adjust path to your Student model
-
-
-// Route to generate and download QR code
-const generateQr = async (req, res) => {
-    try {
-        const { studentId } = req.params;
-
-        // Find student by ID
-        const student = await Student.findById(studentId).select('firstName lastName');
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found' });
-        }
-
-        // QR code content (e.g., student ID)
-        const qrContent = studentId;
-
-        // Create canvas for QR code and text
-        const canvas = createCanvas(300, 350); // 300x350 to accommodate QR code and text
-        const ctx = canvas.getContext('2d');
-
-        // Generate QR code
-        const qrDataUrl = await QRCode.toDataURL(qrContent, {
-            width: 250,
-            margin: 1,
-        });
-
-        // Load QR code image
-        const qrImage = await loadImage(qrDataUrl);
-
-        // Draw QR code on canvas (centered)
-        ctx.drawImage(qrImage, 25, 10, 250, 250);
-
-        // Add student's full name below QR code
-        const fullName = `${student.firstName} ${student.lastName}`;
-        ctx.font = 'bold 16px Arial';
-        ctx.fillStyle = '#000';
-        ctx.textAlign = 'center';
-        ctx.fillText(fullName, 150, 290);
-
-        // Convert canvas to buffer
-        const buffer = canvas.toBuffer('image/png');
-
-        // Set headers for automatic download
-        res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename=qr_${studentId}.png`);
-
-        // Send the image
-        res.send(buffer);
-
-    } catch (error) {
-        console.error('Error generating QR code:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
 
 // O‘quvchi QR skaner orqali keldi deb belgilash funksiyasi
 const markAttendance = async (req, res) => {
@@ -124,4 +68,4 @@ const markAttendance = async (req, res) => {
     }
 }
 
-module.exports = { generateQr, markAttendance };
+module.exports = { markAttendance };
