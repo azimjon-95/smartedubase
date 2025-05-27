@@ -10,3 +10,11 @@ router.get('/attendance/:groupId/:studentId', attendanceController.getAttendance
 router.delete('/attendance', attendanceController.deleteAttendance);
 
 module.exports = router;
+
+
+
+
+
+
+
+

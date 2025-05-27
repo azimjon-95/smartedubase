@@ -13,7 +13,7 @@ const {
 groups.post('/groups/', createRegistration);
 groups.get('/groups/', getAllRegistrations);
 groups.get('/groups/:id', getRegistration);
-groups.get('/groups/by-teacher', getGroupsByTeacher);
+groups.get('/groupsbytech/:id', getGroupsByTeacher);
 groups.put('/groups/:id', updateRegistration);
 groups.delete('/groups/:id', deleteRegistration);
 groups.put('/groups/:id/update-teachers', updateTeachers);

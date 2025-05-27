@@ -7,6 +7,7 @@ const attendanceRoutes = require('./routes/attendance.routes');
 const payStudentStoryRoutes = require('./routes/payStudentStoryRoutes');
 const balansRoutes = require('./routes/balansRoutes');
 const qrRoutes = require('./routes/qrRoutes');
+const lessons = require('./routes/route');
 const fileUpload = require('express-fileupload');
 
 
@@ -44,6 +45,7 @@ app.use("/balans", balansRoutes);
 app.use("/api", attendanceRoutes);
 app.use("/api", payStudentStoryRoutes);
 app.use("/api", qrRoutes);
+app.use("/api", lessons);
 
 
 

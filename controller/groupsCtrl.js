@@ -5,7 +5,7 @@ const Student = require('../models/student');
 const getAllRegistrations = async (req, res) => {
     try {
         const groups = await Groups.find(); // Barcha guruhlarni olish
-        const registrations = await Promise.all(groups.map(async (group) => {
+        const registrations = await Promise.all(groups?.map(async (group) => {
             const studentsCount = await Student.countDocuments({ groupId: group._id }); // Har bir guruhga tegishli o'quvchilar sonini olish
             return {
                 ...group._doc, // Group obyekti ichidagi barcha maydonlarni qo'shish
@@ -35,14 +35,15 @@ const createRegistration = async (req, res) => {
 };
 
 
-// Get Groups By Teacher
 const getGroupsByTeacher = async (req, res) => {
-
     try {
-        const groups = await Groups.find({ teacherId: req.user.id });
-        res.json(groups);
+        const { id: teacherId } = req.params;
+        console.log(teacherId);
+        // Query for teacherId as a stringified array
+        const groups = await Groups.find({ teacherId: `["${teacherId}"]` }).lean();
+        return res.json(groups);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching groups', error });
+        return res.status(500).json({ message: 'Error fetching groups', error: error.message });
     }
 };
 
